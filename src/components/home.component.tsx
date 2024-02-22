@@ -1,47 +1,39 @@
-import { Component } from "react";
-
+import React, { useState, useEffect } from 'react';
 import UserService from "../services/user.service";
+import Wheel from "./Wheel"; // Adjust the import path according to your project structure
 
-type Props = {};
+const Home = () => {
+  const [content, setContent] = useState("");
+  const players = [
+    // This should be dynamic or fetched from a service
+    { username: "Player 1", amount: 10 },
+    { username: "Player 2", amount: 20 },
+    // Add more players as needed
+  ];
 
-type State = {
-  content: string;
-}
-
-export default class Home extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {
-      content: ""
-    };
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     UserService.getPublicContent().then(
       response => {
-        this.setState({
-          content: response.data
-        });
+        setContent(response.data);
       },
       error => {
-        this.setState({
-          content:
-            (error.response && error.response.data) ||
-            error.message ||
-            error.toString()
-        });
+        const errorMsg =
+          (error.response && error.response.data) ||
+          error.message ||
+          error.toString();
+        setContent(errorMsg);
       }
     );
-  }
+  }, []); // The empty array ensures this effect runs only once after the initial render
 
-  render() {
-    return (
-      <div className="container">
-        <header className="jumbotron">
-          <h3>{this.state.content}</h3>
-        </header>
-      </div>
-    );
-  }
-}
+  return (
+    <div className="container">
+      <header className="jumbotron">
+        <h3>{content}</h3>
+      </header>
+      <Wheel players={players} />
+    </div>
+  );
+};
+
+export default Home;
