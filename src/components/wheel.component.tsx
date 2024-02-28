@@ -39,7 +39,7 @@ const Wheel = () => {
 
   const spinRandom = () => {
     // Calculate a random rotation for 5-6 full rotations
-    const rotations = 5 + Math.floor(Math.random() * 2);
+    const rotations = 2 + Math.floor(Math.random() * 6);
     const rotation = rotations * 360;
 
     // Spin the wheel
