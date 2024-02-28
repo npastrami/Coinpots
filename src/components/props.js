@@ -18,32 +18,38 @@ export const props = [
     items: [
       {
         label: '$ 50',
+        backgroundColor: '#05ffa1',
       },
       {
         label: '$ 200',
+        backgroundColor: '#a67c00',
       },
       {
         label: '$ 1000',
         weight: 0.6,
-        backgroundColor: '#f23925',
+        backgroundColor: '#ffbf00',
         labelColor: '#fff',
       },
       {
         label: '$ 100',
+        backgroundColor: '#b1ddff',
       },
       {
         label: '$ 200',
+        backgroundColor: '#5f4868',
       },
       {
         label: '$ 500',
         weight: 0.8,
-        backgroundColor: '#b1ddff',
+        backgroundColor: '#ffcf40',
       },
       {
         label: '$ 100',
+        backgroundColor: '#ff0000',
       },
       {
         label: '$ 50',
+        backgroundColor: '#2039ba',
       },
       {
         label: '$ 5000',
@@ -53,9 +59,11 @@ export const props = [
       },
       {
         label: '$ 50',
+        backgroundColor: '#ce7c56',
       },
       {
         label: '$ 200',
+        backgroundColor: '#8dea57',
       },
       {
         label: '$ 500',
@@ -64,21 +72,25 @@ export const props = [
       },
       {
         label: '$ 100',
+        backgroundColor: '#ff9a00',
       },
       {
         label: '$ 200',
+        backgroundColor: '#ff7400',
       },
       {
         label: '$ 1000',
         weight: 0.6,
-        backgroundColor: '#f23925',
+        backgroundColor: '#FFFF00',
         labelColor: '#fff',
       },
       {
         label: '$ 100',
+        backgroundColor: '#a1484f',
       },
       {
         label: '$ 50',
+        backgroundColor: '#9ed670',
       },
       {
         label: '$ 500',
