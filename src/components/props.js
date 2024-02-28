@@ -26,7 +26,6 @@ export const props = [
       },
       {
         label: '$ 1000',
-        weight: 0.6,
         backgroundColor: '#ffbf00',
         labelColor: '#fff',
       },
@@ -40,7 +39,6 @@ export const props = [
       },
       {
         label: '$ 500',
-        weight: 0.8,
         backgroundColor: '#ffcf40',
       },
       {
@@ -53,7 +51,6 @@ export const props = [
       },
       {
         label: '$ 5000',
-        weight: 0.4,
         backgroundColor: '#000',
         labelColor: '#fff',
       },
@@ -67,7 +64,6 @@ export const props = [
       },
       {
         label: '$ 500',
-        weight: 0.8,
         backgroundColor: '#b1ddff',
       },
       {
@@ -80,7 +76,6 @@ export const props = [
       },
       {
         label: '$ 1000',
-        weight: 0.6,
         backgroundColor: '#FFFF00',
         labelColor: '#fff',
       },
@@ -94,10 +89,17 @@ export const props = [
       },
       {
         label: '$ 500',
-        weight: 0.8,
         backgroundColor: '#b1ddff',
       },
-    ],
+    ].map(item => {
+        // Parse the dollar amount from the label
+        const amount = Number(item.label.replace('$', '').trim());
+  
+        // Calculate the weight based on the dollar amount
+        item.weight = amount / 5000; // Adjust this line according to your needs
+  
+        return item;
+      }),
   },
 
   {
