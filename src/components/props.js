@@ -15,7 +15,8 @@ export const props = [
     lineWidth: 1,
     lineColor: '#000',
     overlayImage: './img/example-3-overlay.svg',
-    items: [
+    items: (() => {
+      const items = [
       {
         label: '$ 50',
         backgroundColor: '#05ffa1',
@@ -91,16 +92,24 @@ export const props = [
         label: '$ 500',
         backgroundColor: '#b1ddff',
       },
-    ].map(item => {
-        // Parse the dollar amount from the label
-        const amount = Number(item.label.replace('$', '').trim());
-  
-        // Calculate the weight based on the dollar amount
-        item.weight = amount / 5000; // Adjust this line according to your needs
-  
-        return item;
-      }),
-  },
+    ];
+
+    // Calculate the total amount
+    const totalAmount = items.reduce((acc, item) => {
+      const amount = Number(item.label.replace('$', '').trim());
+      return acc + amount;
+    }, 0);
+
+    // Map over the items to set the weight
+    return items.map(item => {
+      const amount = Number(item.label.replace('$', '').trim());
+      return {
+        ...item,
+        weight: amount / totalAmount,
+      };
+    });
+  })(),
+},
 
   {
     name: 'Basic',
