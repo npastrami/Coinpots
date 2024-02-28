@@ -29,7 +29,7 @@ const Home = () => {
   return (
     <div className="container">
       <header className="jumbotron">
-        <h3>{content}</h3>
+        <h3>BTC Jackpot</h3>
         <Wheel />
       </header>
     </div>

@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { Wheel as SpinWheel } from './spin-wheel-esm';
-
+import * as easing from './easing.js';
 import { loadFonts } from './utils';
 import { props } from './props';
 
 const Wheel = () => {
   const wheelWrapperRef = useRef(null);
+  const wheelInstanceRef = useRef(null);
 
   useEffect(() => {
     const init = async () => {
@@ -16,44 +17,43 @@ const Wheel = () => {
       }
 
       const wheel = new SpinWheel(wheelWrapperRef.current);
+      wheelInstanceRef.current = wheel as any; // Update the type of wheelInstanceRef to allow assignment of the wheel object.
 
-  const dropdown = document.querySelector('select');
+      // Find the "Money" theme in the props array
+      const moneyTheme = props.find(p => p.name === 'Money');
 
-  // Initalise dropdown with the names of each example:
-  for (const p of props) {
-    const opt = document.createElement('option');
-    opt.textContent = p.name;
-    if (dropdown) {
-      dropdown.append(opt);
-    }
-  }
+      if (moneyTheme) {
+        // Initialize the wheel with the "Money" theme
+        wheel.init({
+          ...moneyTheme,
+          rotation: wheel.rotation, // Preserve value.
+        });
+      }
 
-  // Handle dropdown change:
-  if (dropdown) {
-    dropdown.onchange = () => {
-      wheel.init({
-        ...props[dropdown.selectedIndex],
-        rotation: wheel.rotation, // Preserve value.
-      });
+      // Save object globally for easy debugging.
+      (window as any).myWheel = wheel;
     };
-  }
 
-  // Select default:
-  if (dropdown) {
-    dropdown.options[0].selected = true;
-    if (typeof dropdown.onchange === 'function') {
-      dropdown.onchange(new Event('change'));
+    init();
+  }, []);
+
+  const spinRandom = () => {
+    // Calculate a random rotation for 5-6 full rotations
+    const rotations = 5 + Math.floor(Math.random() * 2);
+    const rotation = rotations * 360;
+
+    // Spin the wheel
+    if (wheelInstanceRef.current) {
+      (wheelInstanceRef.current as any).spin(rotation); // Adjust this line according to your SpinWheel implementation
     }
-  }
+  };
 
-  // Save object globally for easy debugging.
-  (window as any).myWheel = wheel;
-};
-
-init();
-}, []);
-
-return <div className="wheel-wrapper" ref={wheelWrapperRef} />;
+  return (
+    <div>
+      <div className="wheel-wrapper" ref={wheelWrapperRef} />
+      <button onClick={spinRandom}>Spin</button>
+    </div>
+  );
 };
 
 export default Wheel;
