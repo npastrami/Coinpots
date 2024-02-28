@@ -3,6 +3,7 @@ import { Wheel as SpinWheel } from './spin-wheel-esm';
 import * as easing from './easing.js';
 import { loadFonts } from './utils';
 import { props as initialProps } from './props';
+import './wheel.css';
 
 interface WheelItem {
   label: string;
@@ -92,11 +93,14 @@ const Wheel = () => {
 
   return (
     <div>
-      <div key={wheelKey} className="wheel-wrapper" ref={wheelWrapperRef} style={{ height: '500px' }} />
+      <div className="container">
+      <h3>10 Min BTC Jackpot</h3>
+      <div key={wheelKey} className="wheel-wrapper" ref={wheelWrapperRef} style={{ height: '300px', width: '500px' }} />
       <button onClick={spinRandom}>Spin</button>
       <input value={label} onChange={e => setLabel(e.target.value)} placeholder="Label" />
       <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount" />
       <button onClick={addSlice}>Add Slice</button>
+      </div>
     </div>
   );
 };

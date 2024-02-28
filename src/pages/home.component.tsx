@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import UserService from "../services/user.service";
-import Wheel from "./wheel.component";
+import Wheel from "../components/wheel.component";
 
 const Home = () => {
   const [content, setContent] = useState("");
@@ -29,7 +29,6 @@ const Home = () => {
   return (
     <div className="container">
       <header className="jumbotron">
-        <h3>BTC Jackpot</h3>
         <Wheel />
       </header>
     </div>

@@ -6,13 +6,13 @@ import "./App.css";
 import AuthService from "./services/auth.service";
 import IUser from './types/user.type';
 
-import Login from "./components/login.component";
-import Register from "./components/register.component";
-import Home from "./components/home.component";
-import Profile from "./components/profile.component";
-import BoardUser from "./components/board-user.component";
-import BoardModerator from "./components/board-moderator.component";
-import BoardAdmin from "./components/board-admin.component";
+import Login from "./pages/login.component";
+import Register from "./pages/register.component";
+import Home from "./pages/home.component";
+import Profile from "./pages/profile.component";
+import BoardUser from "./pages/board-user.component";
+import BoardModerator from "./pages/board-moderator.component";
+import BoardAdmin from "./pages/board-admin.component";
 
 import EventBus from "./common/EventBus";
 
@@ -69,15 +69,10 @@ class App extends Component<Props, State> {
     return (
       <div>
         <nav className="navbar navbar-expand navbar-dark bg-dark">
-          <Link to={"/"} className="navbar-brand">
-            theo.research
+          <Link to={"/home"} className="navbar-brand">
+            CoinPots.com
           </Link>
           <div className="navbar-nav mr-auto">
-            <li className="nav-item">
-              <Link to={"/home"} className="nav-link">
-                Home
-              </Link>
-            </li>
 
             {showModeratorBoard && (
               <li className="nav-item">
