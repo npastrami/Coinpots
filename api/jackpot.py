@@ -3,7 +3,6 @@ import time
 
 class Jackpot:
     def __init__(self) -> None:
-        # take dictionary of username and input amount
         self.players = []
         self.total = 0
         pass
@@ -27,31 +26,37 @@ class Jackpot:
     def execute_jackpot(self):
         if not self.players:
             print("No players to execute the jackpot.")
-            return
-            
-        # Calculate cumulative percentages
-        cumulative_percentages = []
-        cumulative_percentage = 0.0
+            return None, None  # Indicate failure to execute jackpot
+
+        # Start angle for the first segment
+        start_angle = 0
+
+        # List to hold (start_angle, end_angle) for each player's segment
+        player_segments = []
+
+        # Calculate segment sizes and store them
         for player in self.players:
             player_percentage = player['amount'] / self.total
-            cumulative_percentage += player_percentage
-            print(f'{player["username"]} has {player_percentage} chance of winning!')
-            cumulative_percentages.append(cumulative_percentage)
+            segment_size = 360 * player_percentage  # Segment size in degrees
+            end_angle = start_angle + segment_size
+            player_segments.append((start_angle, end_angle))
+            start_angle = end_angle  # Next segment starts where the previous one ended
 
-        # Select a winner based on cumulative percentages
-        random_number = random.random()
-        for i, cumulative_percentage in enumerate(cumulative_percentages):
-            if random_number < cumulative_percentage:
-                winner_index = i
+        # Select a random position (degree) on the wheel
+        winning_position = random.uniform(0, 360)
+
+        # Determine the winner based on the winning_position
+        winner_index = -1
+        for index, (start_angle, end_angle) in enumerate(player_segments):
+            if start_angle <= winning_position < end_angle:
+                winner_index = index
                 break
 
-        winner = self.players[winner_index]
-        print(f"The jackpot winner is {winner['username']}!")
-        
-jackpot = Jackpot()
-jackpot.add_player('Alice', 100)
-jackpot.add_player('Bob', 200)
-jackpot.add_player('Charlie', 150)
+        if winner_index == -1:
+            print("Failed to determine a winner.")
+            return None, None
 
-jackpot.jackpot_timer()
-jackpot.execute_jackpot()
+        winner = self.players[winner_index]
+        print(f"The jackpot winner is {winner['username']} with a winning position of {winning_position} degrees.")
+        return winner['username'], winning_position
+        

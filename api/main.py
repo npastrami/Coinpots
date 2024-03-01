@@ -1,4 +1,4 @@
-from quart import Quart, jsonify
+from quart import Quart, jsonify, request
 from quart_cors import cors
 from tortoise import Tortoise, run_async
 from tortoise.transactions import in_transaction
@@ -8,6 +8,7 @@ from appapi.models.role_model import Role  # Ensure this is the correct path
 from appapi.routes.auth_routes import auth_routes
 from appapi.routes.user_routes import user_routes
 from appapi.controllers.user_controller import user_controller
+from jackpot import Jackpot
 
 app = Quart(__name__)
 # Enable CORS for all routes and origins
@@ -33,6 +34,18 @@ async def initial():
 @app.route("/", methods=["GET"])
 async def welcome():
     return jsonify({"message": "Welcome to bezkoder application."})
+
+@app.route("/api/jackpot/spin", methods=["POST"])
+async def spin_jackpot():
+    # You might want to fetch real player data here instead of using test data
+    jackpot = Jackpot()
+    # Add players to the jackpot. This should be replaced with actual logic to add players
+    jackpot.add_player('Alice', 100)
+    jackpot.add_player('Bob', 200)
+    jackpot.add_player('Charlie', 150)
+    
+    winner, position = jackpot.execute_jackpot()  # Modify execute_jackpot to return winner and position
+    return jsonify({"winner": winner, "position": position})
 
 if __name__ == "__main__":
     run_async(init())

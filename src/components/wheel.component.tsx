@@ -4,6 +4,7 @@ import * as easing from './easing.js';
 import { loadFonts } from './utils';
 import { props as initialProps } from './props';
 import './wheel.css';
+import axios from 'axios';
 
 interface WheelItem {
   label: string;
@@ -50,14 +51,22 @@ const Wheel = () => {
     init();
   }, [props, wheelKey]);
 
-  const spinRandom = () => {
-    // Calculate a random rotation for 5-6 full rotations
-    const rotations = 2 + Math.floor(Math.random() * 6);
-    const rotation = rotations * 360;
+  const animateWheelToPosition = (winningPosition: number) => {
+    const rotations = 5; // Spin the wheel 5 times for visual effect
+    const totalRotation = (rotations * 360) + winningPosition; // Ensure the wheel spins 5 times then lands on the winning position
+  
+    (wheelInstanceRef.current as any).spin(totalRotation); // Adjust based on your wheel's API
+  };
 
-    // Spin the wheel
-    if (wheelInstanceRef.current) {
-      (wheelInstanceRef.current as any).spin(rotation); // Adjust this line according to your SpinWheel implementation
+  const spinRandom = async () => {
+    try {
+      const response = await axios.post('http://localhost:8080/api/jackpot/spin');
+      const { winner, position } = response.data;
+      console.log("Winner: ", winner); // Debugging
+      // You'll need to adjust your wheel logic to accept the position and animate to it
+      animateWheelToPosition(position); // Implement this function based on your wheel's API
+    } catch (error) {
+      console.error("Error spinning the wheel: ", error);
     }
   };
 
