@@ -73,6 +73,14 @@ async def execute_jackpot_logic():
     # Logic to query the database, calculate the winner, and reset for the next round
     print("Executing jackpot logic")
 
+@app.route("/api/jackpot/getEntries", methods=["GET"])
+async def get_entries():
+    async with db_instance.pool.acquire() as connection:
+        entries = await connection.fetch('''
+            SELECT username, amount, background_color FROM jackpot_10min;
+        ''')
+        return jsonify([{"username": entry["username"], "amount": entry["amount"], "background_color": entry["background_color"] or None} for entry in entries])
+
 if __name__ == "__main__":
     # Initialize the event loop
     loop = asyncio.get_event_loop()

@@ -6,11 +6,16 @@ import { props as initialProps } from './props';
 import './wheel.css';
 import axios from 'axios';
 
+interface Entry {
+  username: string;
+  background_color: string | null;
+  amount: number;
+}
+
 interface WheelItem {
   label: string;
-  backgroundColor?: string; // Make optional if not all items have this
-  labelColor?: string;
-  weight?: number; // Make optional if you're adding it dynamically
+  backgroundColor?: string;
+  weight: number; // Assuming weight is calculated and not directly part of the entry
 }
 
 const Wheel = () => {
@@ -50,6 +55,47 @@ const Wheel = () => {
 
     init();
   }, [props, wheelKey]);
+
+  useEffect(() => {
+    const fetchEntries = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/jackpot/getEntries');
+        const fetchedItems = response.data.map((entry: Entry) => ({
+          label: entry.username,
+          labelColor: '#fff', // Default to '#fff' if labelColor is null
+          backgroundColor: entry.background_color || '#808080', // Default to '#000' if background_color is null
+          weight: entry.amount, // Temporarily store amount here; will calculate weight next
+        }));
+        console.log("Fetched items: ", fetchedItems); // Debugging
+  
+        // Calculate the total amount
+        const totalAmount = fetchedItems.reduce((acc: number, item: WheelItem) => acc + item.weight, 0);
+  
+        // Assign the correct weight based on totalAmount
+        const itemsWithWeight = fetchedItems.map((item: WheelItem) => ({
+          ...item,
+          weight: item.weight / totalAmount,
+        }));
+  
+        // Find the "Money" theme index in the props array to update it
+        const index = props.findIndex(p => p.name === 'Money');
+        if (index !== -1) {
+          const newProps = [...props];
+          newProps[index] = { ...newProps[index], items: itemsWithWeight };
+          setProps(newProps);
+        }
+      } catch (error) {
+        console.error("Error fetching entries: ", error);
+      }
+    };
+  
+    // Fetch entries immediately and then every 5 seconds
+    fetchEntries();
+    const intervalId = setInterval(fetchEntries, 5000);
+  
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
   const animateWheelToPosition = (winningPosition: number) => {
     const rotations = 5; // Spin the wheel 5 times for visual effect
