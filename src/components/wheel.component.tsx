@@ -70,34 +70,29 @@ const Wheel = () => {
     }
   };
 
-  const addSlice = () => {
-    const newProps = [...props];
+  const addSlice = async () => {
+    // Assuming `currentUser` holds the username of the logged-in user
+    const currentUser = "username"; // Replace this with actual logic to get the current user's username
     const newAmount = Number(amount);
-    const newTotalAmount = (newProps[0].items as WheelItem[]).reduce((acc: number, item: WheelItem) => {
-      const itemAmount = Number(item.label.replace('$', '').trim());
-      return !isNaN(itemAmount) ? acc + itemAmount : acc;
-    }, 0);
+    if (!currentUser || newAmount <= 0) {
+      console.error("Invalid user or amount");
+      return;
+    }
   
-    newProps[0].items.push({
-      label: `$ ${amount}`,
-      backgroundColor: '', // Add the backgroundColor property here
-      labelColor: '',
-      weight: newAmount / newTotalAmount, // Use the new total amount here
-    });
+    try {
+      await axios.post('http://localhost:8080/api/jackpot/addEntry', {
+        username: currentUser,
+        amount: newAmount,
+        // wallet_id and transaction_id can be omitted or set to null explicitly if your backend handles it
+      });
+      console.log("Entry added successfully");
+    } catch (error) {
+      console.error("Error adding entry: ", error);
+    }
   
-    // Update the weights of all slices
-    newProps[0].items = newProps[0].items.map(item => {
-      const itemAmount = Number(item.label.replace('$', '').trim());
-      return {
-        ...item,
-        weight: itemAmount / newTotalAmount,
-      };
-    });
-  
-    setProps(newProps);
+    // Clear inputs after sending data
     setLabel('');
     setAmount('');
-    setWheelKey(prevKey => prevKey + 1);
   };
 
   return (
@@ -106,9 +101,8 @@ const Wheel = () => {
       <h3>10 Min BTC Jackpot</h3>
       <div key={wheelKey} className="wheel-wrapper" ref={wheelWrapperRef} style={{ height: '300px', width: '500px' }} />
       <button onClick={spinRandom}>Spin</button>
-      <input value={label} onChange={e => setLabel(e.target.value)} placeholder="Label" />
       <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount" />
-      <button onClick={addSlice}>Add Slice</button>
+      <button onClick={addSlice}>Enter</button>
       </div>
     </div>
   );

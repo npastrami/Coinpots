@@ -20,13 +20,22 @@ class Database:
     async def setup_db(self):
         async with self.pool.acquire() as connection:
             await connection.execute('''
-                CREATE TABLE IF NOT EXISTS user_auth (
+                CREATE TABLE IF NOT EXISTS jackpot_10min (
                     username VARCHAR(255) PRIMARY KEY,
-                    password VARCHAR(255) NOT NULL,
-                    email VARCHAR(255) NOT NULL,
-                    status VARCHAR(255) NOT NULL
+                    amount INT,
+                    wallet_id TEXT,
+                    transaction_id TEXT,
+                    background_color TEXT
                 );
             ''')
+    
+    async def create_entry(self, username, amount):
+        async with self.pool.acquire() as connection:
+            await connection.execute('''
+                INSERT INTO jackpot_10min (username, amount, wallet_id, transaction_id, background_color)
+                VALUES ($1, $2, NULL, NULL, NULL)
+                ON CONFLICT (username) DO NOTHING;  
+            ''', username, amount)
 
     async def close(self):
         await self.pool.close()

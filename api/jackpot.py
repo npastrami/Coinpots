@@ -8,8 +8,12 @@ class Jackpot:
         pass
     
     def add_player(self, username, amount):
+        # grab players from jackpot_10min database
+        # add players to self.players
+        # add amount to self.total
         self.players.append({'username': username, 'amount': amount})
         self.total += amount
+        
 
     def remove_player(self, username):
         for player in self.players:
