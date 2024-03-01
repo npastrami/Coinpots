@@ -1,8 +1,9 @@
-import { Component } from "react";
+import { Component, useEffect, useState } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
+import { AuthProvider, useAuth } from "./common/AuthContext";
 import AuthService from "./services/auth.service";
 import IUser from './types/user.type';
 
@@ -41,26 +42,15 @@ class App extends Component<Props, State> {
 
     if (user) {
       this.setState({
-        currentUser: user,
+        currentUser: AuthService.getCurrentUser(),
         showModeratorBoard: user.roles.includes("ROLE_MODERATOR"),
         showAdminBoard: user.roles.includes("ROLE_ADMIN"),
       });
     }
-
-    EventBus.on("logout", this.logOut);
-  }
-
-  componentWillUnmount() {
-    EventBus.remove("logout", this.logOut);
   }
 
   logOut() {
     AuthService.logout();
-    this.setState({
-      showModeratorBoard: false,
-      showAdminBoard: false,
-      currentUser: undefined,
-    });
   }
 
   render() {
@@ -69,10 +59,15 @@ class App extends Component<Props, State> {
     return (
       <div>
         <nav className="navbar navbar-expand navbar-dark bg-dark">
-          <Link to={"/home"} className="navbar-brand">
-            CoinPots.com
+          <Link to={"/"} className="navbar-brand">
+            Coinpots.com
           </Link>
           <div className="navbar-nav mr-auto">
+            <li className="nav-item">
+              <Link to={"/home"} className="nav-link">
+                Home
+              </Link>
+            </li>
 
             {showModeratorBoard && (
               <li className="nav-item">
@@ -107,11 +102,9 @@ class App extends Component<Props, State> {
                 </Link>
               </li>
               <li className="nav-item">
-              <div className="login-page">
                 <a href="/login" className="nav-link" onClick={this.logOut}>
                   LogOut
                 </a>
-                </div>
               </li>
             </div>
           ) : (

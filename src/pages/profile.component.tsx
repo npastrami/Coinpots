@@ -1,4 +1,4 @@
-import { Component } from "react";
+import React, { Component, useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import AuthService from "../services/auth.service";
 import IUser from "../types/user.type";
@@ -17,15 +17,8 @@ export default class Profile extends Component<Props, State> {
     this.state = {
       redirect: null,
       userReady: false,
-      currentUser: { accessToken: "" }
+      currentUser: AuthService.getCurrentUser()
     };
-  }
-
-  componentDidMount() {
-    const currentUser = AuthService.getCurrentUser();
-
-    if (!currentUser) this.setState({ redirect: "/home" });
-    this.setState({ currentUser: currentUser, userReady: true })
   }
 
   render() {

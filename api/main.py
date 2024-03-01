@@ -1,73 +1,39 @@
-from quart import Quart, request, jsonify
-import asyncpg
-from quart_cors import cors, route_cors
+from quart import Quart, jsonify
+from quart_cors import cors
+from tortoise import Tortoise, run_async
+from tortoise.transactions import in_transaction
+from appapi.models.index import TORTOISE_ORM
+import appapi.models.index as modelIndex
+from appapi.models.role_model import Role  # Ensure this is the correct path
+from appapi.routes.auth_routes import auth_routes
+from appapi.routes.user_routes import user_routes
+from appapi.controllers.user_controller import user_controller
 
 app = Quart(__name__)
-app = cors(app, allow_origin="*")
+# Enable CORS for all routes and origins
+app = cors(app, allow_origin="http://localhost:8081")
+app.register_blueprint(auth_routes)
+app.register_blueprint(user_routes)
+app.register_blueprint(user_controller, url_prefix='/api')
 
-async def create_pool():
-    pool = await asyncpg.create_pool(user='postgres', password='kr3310', database='BTD-Management', host='127.0.0.1')
-    await setup_db(pool)
-    return pool
+async def init():
+    await Tortoise.init(config=modelIndex.TORTOISE_ORM)
+    await Tortoise.generate_schemas(safe=True)
 
-async def setup_db(pool):
-    async with pool.acquire() as connection:
-        await connection.execute('''
-            CREATE TABLE IF NOT EXISTS user_auth (
-                username VARCHAR(255) PRIMARY KEY,
-                password VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL,
-                status VARCHAR(255) NOT NULL
-            );
-        ''')
+    await initial()
 
-@app.route('/api/auth/signup', methods=['POST'])
-async def signup():
-    data = await request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    email = data.get('email')
-    status = 'user' # default status
+async def initial():
+    # skip if already exists
+    if await Role.exists():
+        return
+    await Role.create(id=1, name="user")
+    await Role.create(id=2, name="moderator")
+    await Role.create(id=3, name="admin")
 
-    pool = await create_pool()
-    async with pool.acquire() as connection:
-        await connection.execute('''
-            INSERT INTO user_auth (username, password, email, status) VALUES ($1, $2, $3, $4)
-        ''', username, password, email, status)
-
-    return jsonify({'message': 'User created successfully'}), 201
-
-@app.route('/api/auth/login', methods=['POST'])
-async def login():
-    data = await request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-
-    pool = await create_pool()
-    async with pool.acquire() as connection:
-        user = await connection.fetchrow('''
-            SELECT * FROM user_auth WHERE username = $1 AND password = $2
-        ''', username, password)
-
-    if user is None:
-        return jsonify({'message': 'Invalid username or password'}), 401
-
-    return jsonify({'message': 'Logged in successfully'}), 200
-
-@app.route('/api/auth/users', methods=['GET'])
-async def get_users():
-    pool = await create_pool()
-    async with pool.acquire() as connection:
-        users = await connection.fetch('SELECT * FROM user_auth')
-        return jsonify([dict(user) for user in users])
-
-@app.before_serving
-async def startup():
-    app.pool = await create_pool()
-
-@app.after_serving
-async def cleanup():
-    await app.pool.close()
+@app.route("/", methods=["GET"])
+async def welcome():
+    return jsonify({"message": "Welcome to bezkoder application."})
 
 if __name__ == "__main__":
-    app.run(port=8080)
+    run_async(init())
+    app.run(port=8080, debug=True)
