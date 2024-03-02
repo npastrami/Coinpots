@@ -5,6 +5,11 @@ import { loadFonts } from './utils';
 import { props as initialProps } from './props';
 import './wheel.css';
 import axios from 'axios';
+import AuthService from "../services/auth.service";
+
+interface User {
+  username: string;
+}
 
 interface Entry {
   username: string;
@@ -25,6 +30,7 @@ const Wheel = () => {
   const wheelWrapperRef = useRef<HTMLDivElement>(null);
   const wheelInstanceRef = useRef(null);
   const [wheelKey, setWheelKey] = useState(0);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -97,6 +103,14 @@ const Wheel = () => {
     return () => clearInterval(intervalId);
   }, []);
 
+  useEffect(() => {
+    // Retrieve the logged-in user's information when the component mounts
+    const user = AuthService.getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+    }
+  }, []);
+
   const animateWheelToPosition = (winningPosition: number) => {
     const rotations = 5; // Spin the wheel 5 times for visual effect
     const totalRotation = (rotations * 360) + winningPosition; // Ensure the wheel spins 5 times then lands on the winning position
@@ -118,16 +132,16 @@ const Wheel = () => {
 
   const addSlice = async () => {
     // Assuming `currentUser` holds the username of the logged-in user
-    const currentUser = "username"; // Replace this with actual logic to get the current user's username
+    const username = currentUser?.username; // Replace this with actual logic to get the current user's username
     const newAmount = Number(amount);
-    if (!currentUser || newAmount <= 0) {
+    if (!username || newAmount <= 0) {
       console.error("Invalid user or amount");
       return;
     }
   
     try {
       await axios.post('http://localhost:8080/api/jackpot/addEntry', {
-        username: currentUser,
+        username: username,
         amount: newAmount,
         // wallet_id and transaction_id can be omitted or set to null explicitly if your backend handles it
       });
