@@ -143,14 +143,16 @@ const Wheel = () => {
 
   return (
     <div>
-      <div className="container">
+    <div className="container">
+      <div className="ticker"></div> {/* Add this line for the ticker */}
       <h3>10 Min BTC Jackpot</h3>
-      <div key={wheelKey} className="wheel-wrapper" ref={wheelWrapperRef} style={{ height: '300px', width: '500px' }} />
+      <div key={wheelKey} className="wheel-wrapper" ref={wheelWrapperRef} style={{ height: '300px', width: '500px' }}>
+      </div>
       <button onClick={spinRandom}>Spin</button>
       <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount" />
       <button onClick={addSlice}>Enter</button>
-      </div>
     </div>
+  </div>
   );
 };
 
