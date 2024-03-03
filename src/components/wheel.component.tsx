@@ -80,6 +80,14 @@ const Wheel = forwardRef((props, ref) => {
     triggerCycle();
   }, []);
 
+  useEffect(() => {
+    // Retrieve the logged-in user's information when the component mounts
+    const user = AuthService.getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+    }
+  }, []);
+
   const triggerCycle = () => {
     // Begin with fetching phase
     let fetchTimeouts: number[] = []; // Explicitly type as number[] for browser environments
