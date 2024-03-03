@@ -30,4 +30,5 @@
 	top: 69px; /* Adjust based on the size of your ticker */
 	/* background-color: red; */
 	filter: drop-shadow(0 0 8px #FFD700);
+	margin-bottom: 25px;
   }

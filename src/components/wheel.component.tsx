@@ -23,18 +23,31 @@ interface WheelItem {
   weight: number; // Assuming weight is calculated and not directly part of the entry
 }
 
-const Wheel = () => {
+export interface WheelHandle {
+  handleTimerEnd: () => void;
+}
+
+const Wheel = forwardRef((props, ref) => {
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState('');
-  const [props, setProps] = useState(initialProps);
+  const [initprops, setProps] = useState(initialProps);
   const wheelWrapperRef = useRef<HTMLDivElement>(null);
   const wheelInstanceRef = useRef(null);
   const [wheelKey, setWheelKey] = useState(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [timerActive, setTimerActive] = useState(true);
+  const [cycleActive, setCycleActive] = useState(true);
+
+  useImperativeHandle(ref, () => ({
+    handleTimerEnd() {
+      console.log('Timer ended. Handling in Wheel.');
+      // triggerSpin();
+    },
+  }), []);
 
   useEffect(() => {
     const init = async () => {
-      await loadFonts(props.map(i => i.itemLabelFont));
+      await loadFonts(initprops.map(i => i.itemLabelFont));
 
       // Make sure to clean up the previous wheel instance if it exists
       if (wheelWrapperRef.current && wheelWrapperRef.current.firstChild) {
@@ -45,7 +58,7 @@ const Wheel = () => {
       wheelInstanceRef.current = wheel as any; // Update the type of wheelInstanceRef to allow assignment of the wheel object.
 
       // Find the "Money" theme in the props array
-      const moneyTheme = props.find(p => p.name === 'Money');
+      const moneyTheme = initprops.find(p => p.name === 'Money');
 
       if (moneyTheme) {
         // Initialize the wheel with the "Money" theme
@@ -60,73 +73,92 @@ const Wheel = () => {
     };
 
     init();
-  }, [props, wheelKey]);
+  }, [initprops, wheelKey]);
 
   useEffect(() => {
-    const fetchEntries = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/api/jackpot/getEntries');
-        const fetchedItems = response.data.map((entry: Entry) => ({
-          label: entry.username,
-          labelColor: '#fff', // Default to '#fff' if labelColor is null
-          backgroundColor: entry.background_color || '#808080', // Default to '#000' if background_color is null
-          weight: entry.amount, // Temporarily store amount here; will calculate weight next
-        }));
-        console.log("Fetched items: ", fetchedItems); // Debugging
-  
-        // Calculate the total amount
-        const totalAmount = fetchedItems.reduce((acc: number, item: WheelItem) => acc + item.weight, 0);
-  
-        // Assign the correct weight based on totalAmount
-        const itemsWithWeight = fetchedItems.map((item: WheelItem) => ({
-          ...item,
-          weight: item.weight / totalAmount,
-        }));
-  
-        // Find the "Money" theme index in the props array to update it
-        const index = props.findIndex(p => p.name === 'Money');
-        if (index !== -1) {
-          const newProps = [...props];
-          newProps[index] = { ...newProps[index], items: itemsWithWeight };
-          setProps(newProps);
-        }
-      } catch (error) {
-        console.error("Error fetching entries: ", error);
-      }
-    };
-  
-    // Fetch entries immediately and then every 5 seconds
-    fetchEntries();
-    const intervalId = setInterval(fetchEntries, 5000);
-  
-    // Cleanup interval on component unmount
-    return () => clearInterval(intervalId);
+    // Start the initial cycle immediately
+    triggerCycle();
   }, []);
 
-  useEffect(() => {
-    // Retrieve the logged-in user's information when the component mounts
-    const user = AuthService.getCurrentUser();
-    if (user) {
-      setCurrentUser(user);
+  const triggerCycle = () => {
+    // Begin with fetching phase
+    let fetchTimeouts: number[] = []; // Explicitly type as number[] for browser environments
+    for (let i = 0; i < 30; i++) { // 30 fetches, every 2 seconds for 60 seconds
+      fetchTimeouts.push(window.setTimeout(() => fetchEntries(), i * 2000));
     }
-  }, []);
+  
+    // After 60 seconds, pause fetching and trigger spin
+    setTimeout(() => {
+      // Clear any pending fetch timeouts to ensure no fetch happens during the spin
+      fetchTimeouts.forEach(timeout => clearTimeout(timeout));
+  
+      // Trigger the spin
+      triggerSpin().then(() => {
+        // After the spin (assuming 15 seconds for animation), restart the cycle
+        setTimeout(triggerCycle, 15000);
+      });
+    }, 60000);
+  };
+
+  const fetchEntries = async () => {
+    if (!cycleActive) return; // Skip fetching if cycle is not active
+    try {
+      const response = await axios.get('http://localhost:8080/api/jackpot/getEntries');
+    const fetchedItems = response.data.map((entry: Entry) => ({
+      label: entry.username,
+      labelColor: '#fff', // Default to '#fff' if labelColor is null
+      backgroundColor: entry.background_color || '#808080', // Default to '#000' if background_color is null
+      weight: entry.amount, // Temporarily store amount here; will calculate weight next
+    }));
+    console.log("Fetched items: ", fetchedItems); // Debugging
+
+    // Calculate the total amount
+    const totalAmount = fetchedItems.reduce((acc: number, item: WheelItem) => acc + item.weight, 0);
+
+    // Assign the correct weight based on totalAmount
+    const itemsWithWeight = fetchedItems.map((item: WheelItem) => ({
+      ...item,
+      weight: item.weight / totalAmount,
+    }));
+
+    // Find the "Money" theme index in the props array to update it
+    const index = initprops.findIndex(p => p.name === 'Money');
+    if (index !== -1) {
+      const newProps = [...initprops];
+      newProps[index] = { ...newProps[index], items: itemsWithWeight };
+      setProps(newProps);
+    }
+    } catch (error) {
+      console.error("Error fetching entries: ", error);
+    }
+};
 
   const animateWheelToPosition = (winningPosition: number) => {
-    const rotations = 5; // Spin the wheel 5 times for visual effect
-    const totalRotation = (rotations * 360) + winningPosition; // Ensure the wheel spins 5 times then lands on the winning position
+    const rotations = 2; // Spin the wheel 5 times for visual effect
+    const totalRotation = (rotations * 360) - winningPosition; // Ensure the wheel spins 5 times then lands on the winning position
   
     (wheelInstanceRef.current as any).spin(totalRotation); // Adjust based on your wheel's API
   };
 
-  const spinRandom = async () => {
+  const triggerSpin = async () => {
+    setCycleActive(false); // Pause the cycle for spin
+    console.log("Attempting to trigger spin");
     try {
       const response = await axios.post('http://localhost:8080/api/jackpot/spin');
       const { winner, position } = response.data;
-      console.log("Winner: ", winner); // Debugging
-      // You'll need to adjust your wheel logic to accept the position and animate to it
-      animateWheelToPosition(position); // Implement this function based on your wheel's API
+      console.log(`Winner: ${winner}, Position: ${position}`);
+      animateWheelToPosition(position); // Make sure this function correctly interprets the position
+      setTimeout(() => {
+        setCycleActive(true); // Resume the cycle after spin animation
+        console.log("Spin animation completed, resuming cycle.");
+      }, 15000);
     } catch (error) {
-      console.error("Error spinning the wheel: ", error);
+      console.error("Error triggering the spin: ", error);
+      // Even in case of an error, resume the cycle after a delay to keep the process going
+      setTimeout(() => {
+        setCycleActive(true);
+        console.log("Resuming cycle after error.");
+      }, 15000);
     }
   };
 
@@ -138,7 +170,6 @@ const Wheel = () => {
       console.error("Invalid user or amount");
       return;
     }
-  
     try {
       await axios.post('http://localhost:8080/api/jackpot/addEntry', {
         username: username,
@@ -159,15 +190,15 @@ const Wheel = () => {
     <div>
     <div className="container">
       <div className="ticker"></div> {/* Add this line for the ticker */}
-      <h3>10 Min BTC Jackpot</h3>
+      <h3></h3>
       <div key={wheelKey} className="wheel-wrapper" ref={wheelWrapperRef} style={{ height: '300px', width: '500px' }}>
       </div>
-      <button onClick={spinRandom}>Spin</button>
+      <button onClick={triggerSpin}>Spin</button>
       <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount" />
       <button onClick={addSlice}>Enter</button>
     </div>
   </div>
   );
-};
+});
 
 export default Wheel;
