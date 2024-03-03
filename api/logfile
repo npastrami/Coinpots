@@ -1,0 +1,12 @@
+2024-03-02 22:08:03.341 EST [81824] LOG:  starting PostgreSQL 14.11 (Homebrew) on x86_64-apple-darwin20.3.0, compiled by Apple clang version 12.0.5 (clang-1205.0.22.9), 64-bit
+2024-03-02 22:08:03.344 EST [81824] LOG:  listening on IPv6 address "::1", port 5432
+2024-03-02 22:08:03.344 EST [81824] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2024-03-02 22:08:03.344 EST [81824] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-03-02 22:08:03.351 EST [81825] LOG:  database system was shut down at 2024-03-02 22:07:04 EST
+2024-03-02 22:08:03.390 EST [81824] LOG:  database system is ready to accept connections
+2024-03-02 22:12:05.804 EST [82757] FATAL:  role "postgres" does not exist
+2024-03-02 22:14:07.624 EST [82978] FATAL:  database "edwardnina" does not exist
+2024-03-02 22:17:15.670 EST [83348] FATAL:  database "BTD-Management" does not exist
+2024-03-02 22:43:20.351 EST [86163] FATAL:  database "BTD-Management" does not exist
+2024-03-02 22:44:21.393 EST [86316] FATAL:  database "BTD-Management" does not exist
+2024-03-02 22:46:44.173 EST [86625] FATAL:  database "BTD-Management" does not exist

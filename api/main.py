@@ -1,6 +1,6 @@
 from quart import Quart, jsonify, request
 from quart_cors import cors
-from tortoise import Tortoise, run_async
+from tortoise import Tortoise
 from tortoise.transactions import in_transaction
 from appapi.models.index import TORTOISE_ORM
 import appapi.models.index as modelIndex
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     loop.run_until_complete(init())
     
     # Now that the loop is running, we can schedule additional tasks
-    loop.create_task(jackpot_timer())
+    # loop.create_task(jackpot_timer())
     
     # Finally, start the Quart app within the event loop
     loop.run_until_complete(app.run_task(port=8080, debug=True))
