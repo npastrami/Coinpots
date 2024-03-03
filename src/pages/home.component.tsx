@@ -1,13 +1,21 @@
-import React, { useState, Component, useEffect } from "react";
+import React, { Component, createRef } from "react";
 import UserService from "../services/user.service";
-import Wheel from "../components/wheel.component";
+import Wheel, { WheelHandle } from "../components/wheel.component";
+import Timer from '../components/timer';
 
-export default class Home extends Component {
+// Define an interface for the component's state
+interface HomeState {
+  content: string;
+  timerKey: number; // Include the timerKey in the state interface
+}
+
+export default class Home extends Component<{}, HomeState> {
   constructor(props: any) {
     super(props);
 
     this.state = {
-      content: ""
+      content: "",
+      timerKey: 0 // Initialize the timerKey in the state
     };
   }
   componentDidMount(): void {
@@ -29,11 +37,29 @@ export default class Home extends Component {
     );
   }
 
+  wheelRef = createRef<WheelHandle>();
+
+  handleTimerEnd = () => {
+    console.log('Timer ended. Handling in Home.');
+    if (this.wheelRef.current) {
+      this.wheelRef.current.handleTimerEnd();
+    }
+    // Reset the timer by incrementing the timerKey
+    setTimeout(() => {
+      this.setState(prevState => ({
+        timerKey: prevState.timerKey + 1
+      }));
+    }, 15000); // 15 seconds delay
+  };
+
+
   render() {
+    const { timerKey } = this.state;
     return (
       <div className="container">
         <header className="jumbotron">
-          <Wheel />
+          <Timer key={timerKey} onTimerEnd={this.handleTimerEnd} />
+          <Wheel ref={this.wheelRef} />
         </header>
       </div>
     );
