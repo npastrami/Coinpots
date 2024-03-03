@@ -42,17 +42,25 @@ async def initial():
 async def welcome():
     return jsonify({"message": "Welcome to bezkoder application."})
 
+async def fetch_jackpot_entries():
+    async with db_instance.pool.acquire() as connection:
+        entries = await connection.fetch('SELECT username, amount FROM jackpot_10min')
+        return entries
+
 @app.route("/api/jackpot/spin", methods=["POST"])
 async def spin_jackpot():
-    # You might want to fetch real player data here instead of using test data
-    jackpot = Jackpot()
-    # Add players to the jackpot. This should be replaced with actual logic to add players
-    jackpot.add_player('Alice', 100)
-    jackpot.add_player('Bob', 200)
-    jackpot.add_player('Charlie', 150)
-    
-    winner, position = jackpot.execute_jackpot()  # Modify execute_jackpot to return winner and position
-    return jsonify({"winner": winner, "position": position})
+    async with app.app_context():
+        entries = await fetch_jackpot_entries()
+        if not entries:
+            return jsonify({"message": "No entries available."}), 400
+
+        jackpot = Jackpot()
+        for entry in entries:
+            jackpot.add_player(entry['username'], entry['amount'])
+        
+        winner, position = jackpot.execute_jackpot()
+        print(f"Winner: {winner}, Position: {position}")
+        return jsonify({"winner": winner, "position": position})
 
 @app.route("/api/jackpot/addEntry", methods=["POST"])
 async def add_entry():
@@ -64,14 +72,12 @@ async def add_entry():
     await db_instance.create_entry(username, amount)
     return jsonify({"message": "Entry added successfully"}), 200
 
-async def jackpot_timer():
-    while True:
-        await asyncio.sleep(60)  # Wait for 10 minutes
-        await execute_jackpot_logic()
-
-async def execute_jackpot_logic():
-    # Logic to query the database, calculate the winner, and reset for the next round
-    print("Executing jackpot logic")
+# async def jackpot_timer():
+#     while True:
+#         print("starting timer 60secs")
+#         await asyncio.sleep(60)  # Wait for 10 minutes
+#         print("spinning")
+#         await spin_jackpot()
 
 @app.route("/api/jackpot/getEntries", methods=["GET"])
 async def get_entries():
@@ -89,7 +95,7 @@ if __name__ == "__main__":
     loop.run_until_complete(init())
     
     # Now that the loop is running, we can schedule additional tasks
-    loop.create_task(jackpot_timer())
+    # loop.create_task(jackpot_timer())
     
     # Finally, start the Quart app within the event loop
     loop.run_until_complete(app.run_task(port=8080, debug=True))
