@@ -44,12 +44,18 @@ export default class Home extends Component<{}, HomeState> {
     if (this.wheelRef.current) {
       this.wheelRef.current.handleTimerEnd();
     }
-    // Reset the timer by incrementing the timerKey
-    setTimeout(() => {
-      this.setState(prevState => ({
-        timerKey: prevState.timerKey + 1
-      }));
-    }, 15000); // 15 seconds delay
+     // 15 seconds delay
+  };
+
+  handleCycleComplete = () => {
+    console.log('Timer restarted. synced with backend.');
+    if (this.wheelRef.current) {
+      this.wheelRef.current.handleTimerEnd();
+    }
+    // This function will be called when the Wheel's cycle is complete
+    this.setState(prevState => ({
+      timerKey: prevState.timerKey + 1
+    }));
   };
 
 
@@ -59,7 +65,7 @@ export default class Home extends Component<{}, HomeState> {
       <div className="container">
         <header className="jumbotron">
           <Timer key={timerKey} onTimerEnd={this.handleTimerEnd} />
-          <Wheel ref={this.wheelRef} />
+          <Wheel ref={this.wheelRef} onCycleComplete={this.handleCycleComplete} />
         </header>
       </div>
     );
