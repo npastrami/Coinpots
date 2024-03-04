@@ -11,6 +11,10 @@ interface User {
   username: string;
 }
 
+interface WheelProps {
+  onCycleComplete: () => void;
+}
+
 interface Entry {
   username: string;
   background_color: string | null;
@@ -27,7 +31,7 @@ export interface WheelHandle {
   handleTimerEnd: () => void;
 }
 
-const Wheel = forwardRef((props, ref) => {
+const Wheel = forwardRef<WheelHandle, WheelProps>(({ onCycleComplete }, ref) => {
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState('');
   const [initprops, setProps] = useState(initialProps);
@@ -78,6 +82,14 @@ const Wheel = forwardRef((props, ref) => {
   useEffect(() => {
     // Start the initial cycle immediately
     triggerCycle();
+  }, []);
+
+  useEffect(() => {
+    // Retrieve the logged-in user's information when the component mounts
+    const user = AuthService.getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+    }
   }, []);
 
   const triggerCycle = () => {
@@ -135,9 +147,9 @@ const Wheel = forwardRef((props, ref) => {
 
   const animateWheelToPosition = (winningPosition: number) => {
     const rotations = 2; // Spin the wheel 5 times for visual effect
-    const totalRotation = (rotations * 360) - winningPosition; // Ensure the wheel spins 5 times then lands on the winning position
-  
-    (wheelInstanceRef.current as any).spin(totalRotation); // Adjust based on your wheel's API
+    const totalRotation = (rotations * 360) + winningPosition; // Ensure the wheel spins 5 times then lands on the winning position
+    console.log("Animating wheel to position: ", totalRotation);
+    (wheelInstanceRef.current as any).spinTo(-totalRotation, 4000, null); // Adjust based on your wheel's API
   };
 
   const triggerSpin = async () => {
@@ -151,13 +163,15 @@ const Wheel = forwardRef((props, ref) => {
       setTimeout(() => {
         setCycleActive(true); // Resume the cycle after spin animation
         console.log("Spin animation completed, resuming cycle.");
+        onCycleComplete(); // Call the callback here
       }, 15000);
     } catch (error) {
       console.error("Error triggering the spin: ", error);
       // Even in case of an error, resume the cycle after a delay to keep the process going
       setTimeout(() => {
-        setCycleActive(true);
-        console.log("Resuming cycle after error.");
+        setCycleActive(true); // Resume the cycle after spin animation
+        console.log("Spin animation completed, resuming cycle.");
+        onCycleComplete(); // Call the callback here
       }, 15000);
     }
   };
